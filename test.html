@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test JSON Load</title>
+</head>
+<body>
+    <h2>Testing JSON Load</h2>
+    <pre id="output"></pre>
+
+    <script>
+        // Fetch the JSON from the data folder
+        fetch('data/philippine_provinces_cities_municipalities_and_barangays_2019v2.json')
+            .then(response => response.json())
+            .then(data => {
+                console.log(data); // check in browser console
+                document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                console.error('Error loading JSON:', error);
+                document.getElementById('output').textContent = 'Error loading JSON. Check console.';
+            });
+    </script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 <?php
 session_start();
-require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php'; 
 include "db_connect.php";
 
 use Vonage\Client;
@@ -30,68 +30,41 @@ $showOtpModal = false;
 
 // --- STEP 1: User clicks Register (send OTP) ---
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['sendOtp'])) {
-    
-    // Trim all inputs
     $fname = trim($_POST['fname']);
     $mname = trim($_POST['mname']);
     $lname = trim($_POST['lname']);
     $suffix = trim($_POST['suffix']);
     $email = trim($_POST['email']);
     $contact = preg_replace('/^0/', '+63', trim($_POST['contact']));
-    $region = trim($_POST['region']);
-    $province = trim($_POST['province']);
-    $city = trim($_POST['city']);
-    $barangay = trim($_POST['barangay']);
-    $street = trim($_POST['street']);
-    $zip = trim($_POST['zip']);
+    $region = $_POST['region'];
+    $province = $_POST['province'];
+    $city = $_POST['city'];
+    $barangay = $_POST['barangay'];
+    $street = $_POST['street'];
+    $zip = $_POST['zip'];
     $username = trim($_POST['username']);
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
 
-    // --- REQUIRED FIELD VALIDATION ---
-    $requiredFields = [
-        'fname' => 'First Name',
-        'lname' => 'Last Name',
-        'contact' => 'Contact Number',
-        'email' => 'Email',
-        'region' => 'Region',
-        'province' => 'Province',
-        'city' => 'City / Municipality',
-        'barangay' => 'Barangay',
-        'username' => 'Username',
-        'password' => 'Password',
-        'confirm_password' => 'Confirm Password'
+    // ✅ Password Match
+    if ($password !== $confirm_password) $errors['confirm_password'] = "Passwords do not match.";
+
+    // ✅ Duplicate Checks
+    $checks = [
+        ['email', $email, 'Email already registered.'],
+        ['contact', $contact, 'Contact number already registered.'],
+        ['username', $username, 'Username already taken.']
     ];
 
-    foreach ($requiredFields as $field => $label) {
-        if (empty(trim($_POST[$field] ?? ''))) {
-            $errors[$field] = "Please input $label.";
-        }
+    foreach ($checks as [$column, $value, $message]) {
+        $stmt = $conn->prepare("SELECT id FROM users WHERE $column = ?");
+        $stmt->bind_param("s", $value);
+        $stmt->execute();
+        if ($stmt->get_result()->num_rows > 0) $errors[$column] = $message;
+        $stmt->close();
     }
 
-    // Password match check
-    if (!empty($password) && !empty($confirm_password) && $password !== $confirm_password) {
-        $errors['confirm_password'] = "Passwords do not match.";
-    }
-
-    // Duplicate checks (only if required fields are filled)
-    if (!array_filter($errors)) {
-        $checks = [
-            ['email', $email, 'Email already registered.'],
-            ['contact', $contact, 'Contact number already registered.'],
-            ['username', $username, 'Username already taken.']
-        ];
-
-        foreach ($checks as [$column, $value, $message]) {
-            $stmt = $conn->prepare("SELECT id FROM users WHERE $column = ?");
-            $stmt->bind_param("s", $value);
-            $stmt->execute();
-            if ($stmt->get_result()->num_rows > 0) $errors[$column] = $message;
-            $stmt->close();
-        }
-    }
-
-    // If no errors, send OTP via Vonage
+    // ✅ If no errors, send OTP via Vonage
     if (!array_filter($errors)) {
         $otp = rand(100000, 999999);
         $_SESSION['otp'] = $otp;
@@ -102,11 +75,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['sendOtp'])) {
             'username', 'password'
         );
 
-        // Vonage API credentials - Econnect
-        $apiKey = "7efb4312";
-        $apiSecret = "JE6YeuECR1rKmcjL";
+        // Vonage API credentials - Alexers
+        $apiKey = "7980a169";
+        $apiSecret = "ISnASXhxL4ktm50v";
         $basic = new Basic($apiKey, $apiSecret);
         $client = new Client($basic);
+
+        // Vonage API credentials - Econnect
+        // $apiKey = "7efb4312";
+        // $apiSecret = "JE6YeuECR1rKmcjL";
+       //  $basic = new Basic($apiKey, $apiSecret);
+        //$client = new Client($basic);
 
         try {
             $response = $client->sms()->send(
@@ -154,7 +133,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['finalRegister'])) {
 
         if ($stmt->execute()) {
             unset($_SESSION['otp'], $_SESSION['otp_expiry'], $_SESSION['pending_user']);
-            header("Location: login.php");
+            header("Location: 123landing.php");
             exit;
         } else {
             $errors['fname'] = "Database error: " . $stmt->error;
@@ -169,26 +148,29 @@ $conn->close();
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Register</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="reg.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="reg.css">
+
 </head>
 <body>
 
-<header class="custom-header">
+    <header class="custom-header">
     <div class="container d-flex justify-content-between align-items-center py-2">
         <a href="home.php" class="d-flex align-items-center text-decoration-none">
             <img src="img/logoo.png" alt="ECOnnect Logo" class="header-logo">
             <span style="color: white; font-weight: 600;">ECOnnect</span>
         </a>
+
         <a href="index.php" class="btn-back">Home</a>
     </div>
 </header>
 
 <div class="register-container">
+
     <h2>Join Us!</h2>
     <p class="subtext">Create your account to get started</p>
 
@@ -201,99 +183,113 @@ $conn->close();
 
     <div class="divider-or">OR</div>
 
-    <form action="" method="POST">
-        <h5 class="mb-3">Personal Information</h5>
-        <div class="row g-3">
-            <div class="col-md-3">
-                <label class="form-label">First Name</label>
-                <input type="text" class="form-control" name="fname" value="<?= htmlspecialchars($_POST['fname'] ?? '') ?>">
-                <p class="text-red-600 text-sm mt-1"><?= $errors['fname'] ?></p>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label">Middle Name</label>
-                <input type="text" class="form-control" name="mname" value="<?= htmlspecialchars($_POST['mname'] ?? '') ?>">
-                <p class="text-red-600 text-sm mt-1"><?= $errors['mname'] ?></p>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label">Last Name</label>
-                <input type="text" class="form-control" name="lname" value="<?= htmlspecialchars($_POST['lname'] ?? '') ?>">
-                <p class="text-red-600 text-sm mt-1"><?= $errors['lname'] ?></p>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label">Suffix</label>
-                <input type="text" class="form-control" name="suffix" value="<?= htmlspecialchars($_POST['suffix'] ?? '') ?>" placeholder="e.g., Jr., III">
-                <p class="text-red-600 text-sm mt-1"><?= $errors['suffix'] ?></p>
-            </div>
-        </div>
+    <form action="" method="POST"> <!-- submit to same file -->
 
-        <div class="row g-3 mt-1">
-            <div class="col-md-6">
-                <label class="form-label">Contact Number</label>
-                <input type="text" class="form-control" name="contact" value="<?= htmlspecialchars($_POST['contact'] ?? '') ?>">
-                <p class="text-red-600 text-sm mt-1"><?= $errors['contact'] ?></p>
-            </div>
-            <div class="col-md-6">
-                <label class="form-label">Email</label>
-                <input type="email" class="form-control" name="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
-                <p class="text-red-600 text-sm mt-1"><?= $errors['email'] ?></p>
-            </div>
-        </div>
+        <h5 class="mb-3">Personal Information</h5>
+
+        <div class="row g-3">
+    <div class="col-md-3">
+        <label class="form-label">Region</label>
+        <select id="regionSelect" name="region" class="form-control" required>
+            <option value="">Select Region</option>
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Province</label>
+        <select id="provinceSelect" name="province" class="form-control" required>
+            <option value="">Select Province</option>
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">City / Municipality</label>
+        <select id="municipalitySelect" name="city" class="form-control" required>
+            <option value="">Select City/Municipality</option>
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Barangay</label>
+        <select id="barangaySelect" name="barangay" class="form-control" required>
+            <option value="">Select Barangay</option>
+        </select>
+    </div>
+</div>
+
+
+<div class="row g-3 mt-1">
+    <div class="col-md-4">
+        <label class="form-label">Street / House No. / Subdivision</label>
+        <input type="text" class="form-control" name="street">
+    </div>
+
+    <div class="col-md-4">
+        <label class="form-label">ZIP / Postal Code</label>
+        <input type="text" class="form-control" name="zip">
+    </div>
+</div>
+
 
         <hr class="mt-4">
 
         <h5 class="mb-3">Address Information</h5>
+
         <div class="row g-3">
             <div class="col-md-4">
                 <label class="form-label">Region</label>
-                <input type="text" class="form-control" name="region" value="<?= htmlspecialchars($_POST['region'] ?? '') ?>">
-                <p class="text-red-600 text-sm mt-1"><?= $errors['region'] ?></p>
+                <input type="text" class="form-control" name="region" required>
             </div>
+
             <div class="col-md-4">
                 <label class="form-label">Province</label>
-                <input type="text" class="form-control" name="province" value="<?= htmlspecialchars($_POST['province'] ?? '') ?>">
-                <p class="text-red-600 text-sm mt-1"><?= $errors['province'] ?></p>
+                <input type="text" class="form-control" name="province" required>
             </div>
+
             <div class="col-md-4">
                 <label class="form-label">City / Municipality</label>
-                <input type="text" class="form-control" name="city" value="<?= htmlspecialchars($_POST['city'] ?? '') ?>">
-                <p class="text-red-600 text-sm mt-1"><?= $errors['city'] ?></p>
+                <input type="text" class="form-control" name="city" required>
             </div>
-            <div class="col-md-4 mt-1">
+        </div>
+
+        <div class="row g-3 mt-1">
+            <div class="col-md-4">
                 <label class="form-label">Barangay</label>
-                <input type="text" class="form-control" name="barangay" value="<?= htmlspecialchars($_POST['barangay'] ?? '') ?>">
-                <p class="text-red-600 text-sm mt-1"><?= $errors['barangay'] ?></p>
+                <select class="form-control" name="barangay" required>
+                    <option value="" selected>Select Barangay</option> <!-- placeholder -->
+                    <option value="Marawoy">Marawoy</option>
+                </select>
             </div>
-            <div class="col-md-4 mt-1">
+
+            <div class="col-md-4">
                 <label class="form-label">Street / House No. / Subdivision</label>
-                <input type="text" class="form-control" name="street" value="<?= htmlspecialchars($_POST['street'] ?? '') ?>">
-                <p class="text-red-600 text-sm mt-1"><?= $errors['street'] ?></p>
+                <input type="text" class="form-control" name="street">
             </div>
-            <div class="col-md-4 mt-1">
+
+            <div class="col-md-4">
                 <label class="form-label">ZIP / Postal Code</label>
-                <input type="text" class="form-control" name="zip" value="<?= htmlspecialchars($_POST['zip'] ?? '') ?>">
-                <p class="text-red-600 text-sm mt-1"><?= $errors['zip'] ?></p>
+                <input type="text" class="form-control" name="zip">
             </div>
         </div>
 
         <hr class="mt-4">
 
         <h5 class="mb-3">Account Security</h5>
-        <div class="mt-3">
+
+         <div class="mt-3">
             <label class="form-label">Username</label>
-            <input type="text" class="form-control" name="username" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>">
-            <p class="text-red-600 text-sm mt-1"><?= $errors['username'] ?></p>
+            <input type="text" class="form-control" name="username" required>
         </div>
 
         <div class="row g-3">
             <div class="col-md-6">
                 <label class="form-label">Create Password</label>
-                <input type="password" class="form-control" name="password">
-                <p class="text-red-600 text-sm mt-1"><?= $errors['password'] ?></p>
+                <input type="password" class="form-control" name="password" required>
             </div>
+
             <div class="col-md-6">
                 <label class="form-label">Confirm Password</label>
-                <input type="password" class="form-control" name="confirm_password">
-                <p class="text-red-600 text-sm mt-1"><?= $errors['confirm_password'] ?></p>
+                <input type="password" class="form-control" name="confirm_password" required>
             </div>
         </div>
 
@@ -302,15 +298,15 @@ $conn->close();
             <label>I agree to the Terms of Service and Privacy Policy</label>
         </div>
 
-        <button type="submit" name="sendOtp" class="create-btn">Create Account</button>
+         <button type="submit" name="sendOtp" class="create-btn">Create Account</button>
 
         <p class="login-link">
             Already have an account? <a href="login.php">Log In</a>
         </p>
+
     </form>
 </div>
 
-<!-- OTP Modal -->
 <div id="otpModal" class="fixed inset-0 bg-black bg-opacity-50 <?= $showOtpModal ? 'flex' : 'hidden' ?> z-50 items-center justify-center">
     <div class="bg-white rounded-2xl p-6 w-full max-w-md border border-green-200 shadow-2xl">
         <h3 class="text-xl font-semibold text-green-700 mb-4 text-center">OTP Verification</h3>
@@ -322,7 +318,10 @@ $conn->close();
         </form>
     </div>
 </div>
+<script src="address.js"></script>
+
 
 <?php include("footer.php"); ?>
+    
 </body>
 </html>
