@@ -1,0 +1,151 @@
+body {
+    margin: 0;
+    font-family: Georgia, serif;
+    background-color: #f8f8f8;
+    padding-top: 60px; /* space for fixed header */
+}
+
+/* HEADER */
+.header {
+    width: 100%;
+    background-color: #3f4a36;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+    height: 60px;
+}
+
+.header .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.header img {
+    height: 35px;
+    border-radius: 50%;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logout-btn {
+    color: white;
+    background: transparent;
+    border: 1px solid white;
+    border-radius: 8px;
+    padding: 5px 12px;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.logout-btn:hover {
+    background: white;
+    color: #3f4a36;
+    transition: 0.3s ease;
+}
+
+/* SIDEBAR */
+.sidebar {
+    position: fixed;
+    top: 100px; /* directly below header */
+    left: 20px;
+    width: 200px;
+    height: auto; /* only as tall as content */
+    background-color: #5f7353;
+    padding: 10px 0; /* small padding */
+    box-sizing: border-box;
+    z-index: 999;
+    border-radius: 45px;
+}
+
+/* Only show Admin Settings buttons */
+.sidebar button {
+    width: 160px;
+    margin: 5px 20px; /* smaller spacing */
+    padding: 10px;
+    background-color: white;
+    border: none;
+    font-size: 13px;
+    cursor: pointer;
+    border-radius: 15px;
+    transition: 0.3s;
+}
+
+.sidebar button:hover {
+    background-color: #e0ffe0;
+    transform: translateX(4px);
+}
+
+.sidebar .active {
+    background-color: #e7ffe5;
+    color: green;
+    font-weight: bold;
+    border: 2px solid green;
+}
+
+/* Remove logout button if you want minimal menu */
+.logout {
+    display: none;
+}
+
+
+/* MAIN CONTENT */
+.content {
+    margin-left: 230px; /* space for sidebar */
+    padding: 30px;
+    min-height: calc(100vh - 60px); /* make footer visible */
+}
+
+/* DASHBOARD CARDS */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 25px;
+}
+
+.card {
+    background: rgb(197, 213, 197);
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(22, 38, 7, 0.6);
+    transition: 0.3s ease;
+    text-align: center;
+    outline: 1px solid black;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 18px rgba(22, 38, 7, 1);
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: black;
+    margin-bottom: 12px;
+}
+
+.card-number {
+    font-size: 32px;
+    font-weight: bold;
+    color: rgb(22, 38, 7);
+}
+
+/* FOOTER */
+footer {
+    background-color: #3f4a36;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    margin-top: 50px;
+}
