@@ -1,0 +1,12 @@
+    body {
+        /* background: url('../img/tree.jpg') no-repeat center center fixed; */
+        background-size: cover;
+        min-height: 100vh;
+    } 
+
+.content-area {
+    margin-left: 260px; 
+    padding: 20px;
+    margin-top: 20px;
+}
+
