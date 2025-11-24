@@ -1,0 +1,2 @@
+cURL error 35: Recv failure: Connection was reset (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://rest.nexmo.com/sms/json
+cURL error 6: Could not resolve host: rest.nexmo.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://rest.nexmo.com/sms/json

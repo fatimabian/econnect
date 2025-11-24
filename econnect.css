@@ -1,0 +1,292 @@
+/* GLOBAL STYLES */
+body {
+    font-family: 'Poppins', sans-serif;
+    color: #444;
+    background-color: #f7f7f7;
+    
+}
+
+.title-heading {
+    color: #3f4a36; 
+    font-weight: 600;
+}
+
+/* 1. HEADER & NAVIGATION */
+.custom-header {
+    background-color: #3f4a36; 
+    position: fixed; 
+    top: 0;
+    width: 100%;
+    z-index: 1020; 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+    height: 60px; 
+}
+
+.header-logo {
+    height: 30px; 
+    margin-right: 20px;
+    border-radius: 45px;
+}
+
+.custom-link {
+    color: #ccc !important;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.custom-link.active, .custom-link:hover {
+    color: white !important;
+}
+
+.btn-login {
+    background-color: transparent;
+    color: white;
+    border: none;
+    font-weight: 500;
+}
+
+.btn-signup {
+    background-color: white;
+    color: #3f4a36;
+    border-radius: 20px;
+    padding: 5px 15px;
+    font-weight: 600;
+}
+
+.btn-signup:hover {
+    background-color: #dce8cc; 
+    color: #2f3a28;
+    transition: 0.3s ease;
+}
+
+.btn-login:hover {
+    color: #dce8cc;
+    transition: 0.3s ease;
+}
+
+
+/* 2. HERO SECTION */
+.hero-section {
+    background: url('img/tree.jpg') no-repeat center center/cover;
+    height: 450px; 
+    position: relative;
+    display: flex;
+    align-items: flex-end; 
+    
+}
+
+.hero-content {
+    width: 100%;
+    padding-bottom: 50px;
+}
+
+.hero-card {
+    background-color: rgba(63, 74, 54, 0.85); 
+    color: white;
+    padding: 30px 40px;
+    border-radius: 15px;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto; 
+}
+
+.hero-card h2 {
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.hero-card p {
+    font-weight: 300;
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+}
+
+.btn-explore {
+    background-color: #3f4a36;
+    color: white;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-weight: 600;
+    border: none;
+}
+
+.btn-explore:hover {
+    background-color: #2f3a28; 
+    color: #dce8cc; 
+    transition: 0.3s ease;
+}
+
+/* 3. MISSION, VISION, & SUSTAINABILITY SECTION */
+.mission-vision {
+    background-color: rgb(68, 64, 51); 
+}
+
+.mission-wrapper {
+    background: white;
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.mission-img {
+    width: 50px; 
+    height: 50px;
+    object-fit: contain;
+}
+
+.poster-img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px; 
+}
+
+
+/* 4. HOW IT WORKS SECTION */
+.how-it-works {
+    background-color: white;
+    padding-bottom: 80px !important;
+}
+
+.how-wrapper {
+    background-color: rgb(217, 217, 217);
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Step cards */
+.step-card {
+    background-color: #798a6a;
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.step-card h4 {
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+.step-text {
+    font-weight: 300;
+    font-size: 0.9rem;
+}
+
+/* Icons */
+.icons-row {
+    margin-top: -30px !important;
+}
+
+.process-icon {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 5px;
+}
+
+.icon-label {
+    font-weight: 600;
+    color: #3f4a36;
+    font-size: 0.9rem;
+}
+
+
+/* 5. CONTACT US SECTION (FORM) */
+.contact-us-section {
+    background-color: rgb(68, 64, 51); 
+    padding-top: 80px !important;
+    padding-bottom: 80px !important;
+}
+
+/* Contact Box Container */
+.contact-form-container {
+    background-color: #e5f1d7; 
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Title */
+.contact-heading {
+    color: #3f4a36;
+    font-weight: 700;
+}
+
+/* Input Boxes */
+.contact-input {
+    background-color: white;
+    border: 1px solid #c8c8c8;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-weight: 400;
+    color: #3f4a36;
+}
+
+/* Message Box */
+.contact-message-box {
+    background-color: white;
+    border: 1px solid #c8c8c8;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-weight: 400;
+    color: #3f4a36;
+    resize: none;
+}
+
+/* Small text */
+.contact-text-small {
+    color: #3f4a36;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+/* Phone link */
+.contact-phone-link {
+    color: #3f4a36;
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-decoration: none;
+}
+
+/* Button */
+.btn-send-message {
+    background-color: #3f4a36;
+    color: white;
+    font-weight: 600;
+    padding: 8px 30px;
+    border-radius: 5px;
+    border: none;
+}
+
+
+/* 6. FOOTER */
+.custom-footer {
+    background-color: #3f4a36;
+    color: #ccc; 
+    padding: 15px 0;
+    font-size: 0.9rem;
+    border-top: 1px solid #4c5a40;
+}
+
+.footer-copyright {
+    color: white; /* Copyright text is pure white */
+    font-weight: 300;
+}
+
+.footer-link-text {
+    color: inherit;
+    text-decoration: none;
+    margin-right: 15px;
+    font-weight: 500;
+}
+
+.footer-link-text:hover {
+    color: white;
+}
+
+.social-icons-footer {
+    height: 24px;
+    width: auto;
+}
