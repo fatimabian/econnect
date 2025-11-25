@@ -2,35 +2,45 @@
 session_start();
 include "db_connect.php";
 
-// ==========================
-// HANDLE ADD CREW
-// ==========================
-if(isset($_POST['add_crew'])){
+/* =======================================================
+   ADD CREW MEMBER
+======================================================= */
+if (isset($_POST['add_crew'])) {
     $full_name = trim($_POST['full_name']);
     $barangay = trim($_POST['barangay']);
     $username = trim($_POST['username']);
-    $status = trim($_POST['status']);
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+    $status = "Inactive";
 
-    $stmt = $conn->prepare("INSERT INTO collection_crew (full_name, barangay, username, status, password) VALUES (?, ?, ?, ?, ?)");
-    $stmt->bind_param("sssss", $full_name, $barangay, $username, $status, $password);
-    $stmt->execute();
-    $stmt->close();
+    $check = $conn->prepare("SELECT id FROM collection_crew WHERE username=?");
+    $check->bind_param("s", $username);
+    $check->execute();
+    $check->store_result();
+
+    if ($check->num_rows > 0) {
+        $_SESSION['error'] = "Username already exists.";
+    } else {
+        $stmt = $conn->prepare("INSERT INTO collection_crew (full_name, barangay, username, status, password) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("sssss", $full_name, $barangay, $username, $status, $password);
+        $stmt->execute();
+        $_SESSION['success'] = "Crew member added successfully.";
+    }
+
     header("Location: crew_accounts.php");
     exit();
 }
 
-// ==========================
-// HANDLE EDIT CREW
-// ==========================
-if(isset($_POST['edit_crew'])){
+/* =======================================================
+   EDIT CREW MEMBER
+======================================================= */
+if (isset($_POST['edit_crew'])) {
     $id = intval($_POST['edit_id']);
     $full_name = trim($_POST['edit_full_name']);
     $barangay = trim($_POST['edit_barangay']);
     $username = trim($_POST['edit_username']);
     $status = trim($_POST['edit_status']);
 
-    if(!empty($_POST['edit_password'])){
+    if (!empty($_POST['edit_password'])) {
         $password = password_hash($_POST['edit_password'], PASSWORD_DEFAULT);
         $stmt = $conn->prepare("UPDATE collection_crew SET full_name=?, barangay=?, username=?, status=?, password=? WHERE id=?");
         $stmt->bind_param("sssssi", $full_name, $barangay, $username, $status, $password, $id);
@@ -38,157 +48,222 @@ if(isset($_POST['edit_crew'])){
         $stmt = $conn->prepare("UPDATE collection_crew SET full_name=?, barangay=?, username=?, status=? WHERE id=?");
         $stmt->bind_param("ssssi", $full_name, $barangay, $username, $status, $id);
     }
+
     $stmt->execute();
-    $stmt->close();
+    $_SESSION['success'] = "Crew member updated.";
     header("Location: crew_accounts.php");
     exit();
 }
 
-// ==========================
-// HANDLE DELETE CREW
-// ==========================
-if(isset($_GET['delete_id'])){
-    $id = intval($_GET['delete_id']);
+/* =======================================================
+   DELETE CREW MEMBER
+======================================================= */
+if (isset($_POST['delete_crew'])) {
+    $id = intval($_POST['delete_id']);
     $stmt = $conn->prepare("DELETE FROM collection_crew WHERE id=?");
     $stmt->bind_param("i", $id);
     $stmt->execute();
-    $stmt->close();
+
+    $_SESSION['success'] = "Crew member removed.";
     header("Location: crew_accounts.php");
     exit();
 }
 
-// ==========================
-// FETCH ALL CREWS
-// ==========================
+/* =======================================================
+   ACTIVATE / DEACTIVATE
+======================================================= */
+if (isset($_GET['toggle_id'])) {
+    $id = intval($_GET['toggle_id']);
+    $row = $conn->query("SELECT status FROM collection_crew WHERE id=$id")->fetch_assoc();
+    $new_status = ($row['status'] === "Active") ? "Inactive" : "Active";
+
+    $stmt = $conn->prepare("UPDATE collection_crew SET status=? WHERE id=?");
+    $stmt->bind_param("si", $new_status, $id);
+    $stmt->execute();
+
+    $_SESSION['success'] = "Status updated.";
+    header("Location: crew_accounts.php");
+    exit();
+}
+
+/* =======================================================
+   FETCH CREW LIST
+======================================================= */
 $result = $conn->query("SELECT * FROM collection_crew ORDER BY id ASC");
 $crews = $result->fetch_all(MYSQLI_ASSOC);
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Collection Crew Accounts</title>
-<link rel="stylesheet" href="superAdmin.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+body { background-color: rgba(68,64,51,0.4); padding-top: 100px; }
+.card { border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.btn-primary, .btn-danger, .btn-success, .btn-secondary, .btn-warning { font-weight: 600; }
+.table th, .table td { vertical-align: middle; }
+</style>
 </head>
 <body>
-<?php include "header.php"; ?>
-<?php include "superNav.php"; ?>
 
-<div class="content-area">
+<?php include "header.php"; ?>
+
+<div class="container my-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3>Collection Crew Accounts</h3>
-        <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#addCrewModal">+ Add Crew Member</button>
+        <button class="btn btn-warning fw-bold" data-bs-toggle="modal" data-bs-target="#addCrewModal">+ Add Crew</button>
     </div>
 
-    <div class="card p-3 shadow-sm">
-        <table class="table table-bordered">
-            <thead class="table-warning">
-                <tr>
-                    <th>#</th>
-                    <th>Name</th>
-                    <th>Barangay</th>
-                    <th>Username</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-            <?php 
-            $counter = 1;
-            if(count($crews) > 0):
-                foreach($crews as $row): 
-            ?>
-                <tr>
-                    <td><?= $counter ?></td>
-                    <td><?= htmlspecialchars($row['full_name']) ?></td>
-                    <td><?= htmlspecialchars($row['barangay']) ?></td>
-                    <td><?= htmlspecialchars($row['username']) ?></td>
-                    <td>
-                        <?php if($row['status'] == 'Active'): ?>
-                            <span class="badge bg-success">Active</span>
-                        <?php else: ?>
-                            <span class="badge bg-secondary"><?= htmlspecialchars($row['status']) ?></span>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editCrewModal"
-                            data-id="<?= $row['id'] ?>"
-                            data-full="<?= htmlspecialchars($row['full_name']) ?>"
-                            data-barangay="<?= htmlspecialchars($row['barangay']) ?>"
-                            data-username="<?= htmlspecialchars($row['username']) ?>"
-                            data-status="<?= htmlspecialchars($row['status']) ?>"
-                        >Edit</button>
-                        <a href="?delete_id=<?= $row['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Delete this crew member?')">Remove</a>
-                    </td>
-                </tr>
-            <?php 
-            $counter++;
-                endforeach; 
-            else: ?>
-                <tr>
-                    <td colspan="6" class="text-center">No crew accounts found.</td>
-                </tr>
-            <?php endif; ?>
-            </tbody>
-        </table>
+    <!-- Alerts -->
+    <?php if (isset($_SESSION['success'])): ?>
+        <div class="alert alert-success"><?= $_SESSION['success']; unset($_SESSION['success']); ?></div>
+    <?php endif; ?>
+    <?php if (isset($_SESSION['error'])): ?>
+        <div class="alert alert-danger"><?= $_SESSION['error']; unset($_SESSION['error']); ?></div>
+    <?php endif; ?>
+
+    <div class="card p-3">
+        <input type="text" id="searchBar" class="form-control mb-3" placeholder="Search crew...">
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered">
+                <thead class="table-warning">
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Barangay</th>
+                        <th>Username</th>
+                        <th>Status</th>
+                        <th style="width: 260px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="crewTable">
+                    <?php $i=1; foreach($crews as $row): ?>
+                    <tr>
+                        <td><?= $i++ ?></td>
+                        <td><?= htmlspecialchars($row['full_name']) ?></td>
+                        <td><?= htmlspecialchars($row['barangay']) ?></td>
+                        <td><?= htmlspecialchars($row['username']) ?></td>
+                        <td>
+                            <?= $row['status'] === "Active" ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-secondary">Inactive</span>' ?>
+                        </td>
+                        <td class="d-flex gap-1">
+                            <!-- EDIT -->
+                            <button class="btn btn-sm btn-primary" 
+                                data-bs-toggle="modal"
+                                data-bs-target="#editCrewModal"
+                                data-id="<?= $row['id'] ?>"
+                                data-full="<?= htmlspecialchars($row['full_name']) ?>"
+                                data-barangay="<?= htmlspecialchars($row['barangay']) ?>"
+                                data-username="<?= htmlspecialchars($row['username']) ?>"
+                                data-status="<?= $row['status'] ?>">
+                                Edit
+                            </button>
+
+                            <!-- REMOVE -->
+                            <button class="btn btn-sm btn-danger" 
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteCrewModal"
+                                data-id="<?= $row['id'] ?>"
+                                data-full="<?= htmlspecialchars($row['full_name']) ?>">
+                                Remove
+                            </button>
+
+                            <!-- ACTIVATE / DEACTIVATE -->
+                            <a href="?toggle_id=<?= $row['id'] ?>" 
+                               class="btn btn-sm <?= $row['status'] === 'Active' ? 'btn-secondary' : 'btn-success' ?>">
+                               <?= $row['status'] === "Active" ? "Deactivate" : "Activate" ?>
+                            </a>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
-<!-- Add Crew Modal -->
+<!-- ADD CREW MODAL -->
 <div class="modal fade" id="addCrewModal" tabindex="-1">
-  <div class="modal-dialog">
-    <form method="POST">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5>Add Crew Member</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input type="text" name="full_name" placeholder="Name" class="form-control mb-3" required>
-                <input type="text" name="barangay" placeholder="Barangay" class="form-control mb-3" required>
-                <input type="text" name="username" placeholder="Username" class="form-control mb-3" required>
-                <select name="status" class="form-select mb-3">
-                    <option value="Active" selected>Active</option>
-                    <option value="Inactive">Inactive</option>
-                </select>
-                <input type="password" name="password" placeholder="Password" class="form-control mb-3" required>
-            </div>
-            <div class="modal-footer">
-                <button type="submit" name="add_crew" class="btn btn-warning">Add Crew</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
+  <div class="modal-dialog modal-dialog-centered">
+    <form method="POST" class="modal-content">
+        <div class="modal-header bg-warning">
+            <h5 class="modal-title">Add Crew Member</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+            <input name="full_name" class="form-control mb-2" placeholder="Full Name" required>
+            <input name="barangay" class="form-control mb-2" placeholder="Barangay" required>
+            <input name="username" class="form-control mb-2" placeholder="Username" required>
+            <input type="password" name="password" class="form-control mb-2" placeholder="Password" required>
+        </div>
+        <div class="modal-footer">
+            <button type="submit" name="add_crew" class="btn btn-warning fw-bold">Add Crew</button>
         </div>
     </form>
   </div>
 </div>
 
-<!-- Edit Crew Modal -->
+<!-- EDIT CREW MODAL -->
 <div class="modal fade" id="editCrewModal" tabindex="-1">
-  <div class="modal-dialog">
-    <form method="POST">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5>Edit Crew Member</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" name="edit_id" id="edit_id">
-                <input type="text" name="edit_full_name" id="edit_full_name" class="form-control mb-3" required>
-                <input type="text" name="edit_barangay" id="edit_barangay" class="form-control mb-3" required>
-                <input type="text" name="edit_username" id="edit_username" class="form-control mb-3" required>
-                <select name="edit_status" id="edit_status" class="form-select mb-3">
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                </select>
-                <input type="password" name="edit_password" id="edit_password" placeholder="New Password (leave blank to keep old)" class="form-control mb-3">
-            </div>
-            <div class="modal-footer">
-                <button type="submit" name="edit_crew" class="btn btn-primary">Update Crew</button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
+  <div class="modal-dialog modal-dialog-centered">
+    <form method="POST" class="modal-content" id="editCrewForm">
+        <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title">Edit Crew Member</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="edit_id" name="edit_id">
+            <input id="edit_full_name" name="edit_full_name" class="form-control mb-2" required>
+            <input id="edit_barangay" name="edit_barangay" class="form-control mb-2" required>
+            <input id="edit_username" name="edit_username" class="form-control mb-2" required>
+            <select id="edit_status" name="edit_status" class="form-select mb-2">
+                <option>Active</option>
+                <option>Inactive</option>
+            </select>
+            <input type="password" id="edit_password" name="edit_password" class="form-control mb-2" placeholder="New Password (optional)">
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-primary fw-bold" id="confirmEditBtn">Update</button>
+        </div>
+    </form>
+  </div>
+</div>
+
+<!-- EDIT CONFIRM MODAL -->
+<div class="modal fade" id="confirmEditModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title">Confirm Update</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to update this crew member's information?</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+            <button type="button" class="btn btn-primary fw-bold" id="submitEditForm">Yes, Update</button>
+        </div>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CREW MODAL -->
+<div class="modal fade" id="deleteCrewModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <form method="POST" class="modal-content">
+        <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title">Remove Crew Member</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to remove <strong id="deleteCrewName"></strong>?</p>
+            <input type="hidden" id="delete_id" name="delete_id">
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+            <button type="submit" name="delete_crew" class="btn btn-danger fw-bold">Yes, Remove</button>
         </div>
     </form>
   </div>
@@ -196,15 +271,45 @@ $crews = $result->fetch_all(MYSQLI_ASSOC);
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// Populate Edit Modal
-var editModal = document.getElementById('editCrewModal');
-editModal.addEventListener('show.bs.modal', function (event) {
-  var button = event.relatedTarget;
-  document.getElementById('edit_id').value = button.getAttribute('data-id');
-  document.getElementById('edit_full_name').value = button.getAttribute('data-full');
-  document.getElementById('edit_barangay').value = button.getAttribute('data-barangay');
-  document.getElementById('edit_username').value = button.getAttribute('data-username');
-  document.getElementById('edit_status').value = button.getAttribute('data-status');
+// Fill Edit Modal
+document.getElementById('editCrewModal').addEventListener('show.bs.modal', function(event){
+    const btn = event.relatedTarget;
+    const modal = this;
+    modal.querySelector('#edit_id').value = btn.dataset.id;
+    modal.querySelector('#edit_full_name').value = btn.dataset.full;
+    modal.querySelector('#edit_barangay').value = btn.dataset.barangay;
+    modal.querySelector('#edit_username').value = btn.dataset.username;
+    modal.querySelector('#edit_status').value = btn.dataset.status;
+});
+
+// Close edit modal then show confirmation
+document.getElementById('confirmEditBtn').addEventListener('click', function() {
+    const editModalEl = document.getElementById('editCrewModal');
+    const editModal = bootstrap.Modal.getInstance(editModalEl);
+    editModal.hide();
+    const confirmModal = new bootstrap.Modal(document.getElementById('confirmEditModal'));
+    confirmModal.show();
+});
+
+// Submit edit form after confirmation
+document.getElementById('submitEditForm').addEventListener('click', function() {
+    document.getElementById('editCrewForm').submit();
+});
+
+// Fill Delete Modal
+document.getElementById('deleteCrewModal').addEventListener('show.bs.modal', function(event){
+    const btn = event.relatedTarget;
+    const modal = this;
+    modal.querySelector('#delete_id').value = btn.dataset.id;
+    modal.querySelector('#deleteCrewName').textContent = btn.dataset.full;
+});
+
+// Search Filter
+document.getElementById("searchBar").addEventListener("keyup", function () {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll("#crewTable tr").forEach(row => {
+        row.style.display = row.innerText.toLowerCase().includes(q) ? "" : "none";
+    });
 });
 </script>
 
