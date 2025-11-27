@@ -2,9 +2,31 @@
 session_start();
 include "db_connect.php";
 
-// ==========================
-// HANDLE ACTIONS (AJAX)
-// ==========================
+// ---------------------------
+// CHECK IF ADMIN IS LOGGED IN
+// ---------------------------
+$admin_id = $_SESSION['barangay_admin_id'] ?? null;
+$is_superadmin = $_SESSION['super_admin_id'] ?? false;
+
+if (!$admin_id && !$is_superadmin) {
+    header("Location: ../login.php");
+    exit;
+}
+
+// Get admin barangay if logged in as barangay admin
+$admin_barangay = '';
+if ($admin_id) {
+    $stmt = $conn->prepare("SELECT barangay, full_name FROM barangay_admins WHERE id=?");
+    $stmt->bind_param("i", $admin_id);
+    $stmt->execute();
+    $stmt->bind_result($admin_barangay, $admin_name);
+    $stmt->fetch();
+    $stmt->close();
+}
+
+// ---------------------------
+// HANDLE AJAX ACTIONS
+// ---------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $response = ['success' => false];
     $id = intval($_POST['id']);
@@ -27,82 +49,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     exit;
 }
 
-// ==========================
-// FETCH COMPLAINTS
-// ==========================
+// ---------------------------
+// FETCH PENDING COMPLAINTS
+// ---------------------------
 $pending = [];
-$resolved = [];
+if ($is_superadmin) {
+    $sql = "SELECT * FROM complaints ORDER BY created_at DESC";
+    $stmt = $conn->prepare($sql);
+} else {
+    $sql = "SELECT * FROM complaints WHERE status='Pending' AND message LIKE ? ORDER BY created_at DESC";
+    $stmt = $conn->prepare($sql);
+    $barangay_like = "%$admin_barangay%";
+    $stmt->bind_param("s", $barangay_like);
+}
 
-$stmt = $conn->prepare("SELECT * FROM complaints ORDER BY created_at DESC");
 $stmt->execute();
 $result = $stmt->get_result();
-
 while ($row = $result->fetch_assoc()) {
-    if ($row['status'] === 'Pending') {
-        $pending[] = $row;
-    } else {
-        $resolved[] = $row;
-    }
+    $pending[] = $row;
 }
 $stmt->close();
+$conn->close();
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ECOnnect - Complaints & Support</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
 <style>
-body { 
-    background: #f0f2f0; 
-    font-family: Arial, sans-serif; 
+body {
+    background: rgba(68,64,51,0.4) !important;
+    font-family: Arial, sans-serif;
+    padding-top: 0px;
 }
-
-.content-area { 
-    margin-left: 260px; 
-    padding: 20px; 
-    margin-top: 20px; 
-}
-
-.table-card {
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    margin-bottom: 30px;
-}
-
-.status-pending { color: #ff9800; font-weight: 600; }
-.status-resolved { color: #2e7d32; font-weight: 600; }
-
-td {
-    white-space: pre-wrap;   /* preserves line breaks */
-    word-wrap: break-word;   /* wraps long words */
-    max-width: 250px;        /* optional max width */
-}
-
-.btn-sm { font-size: 0.8rem; }
+.content-area { margin-left: 260px; padding: 25px; }
+.table-card { background: white; padding: 20px; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); margin-bottom: 35px; }
+.status-pending { color: #000; font-weight: 700; }
+.icon-btn { background: none; border: none; color: black; font-size: 1rem; display: flex; align-items: center; gap: 5px; }
+.icon-btn:hover { color: #555; }
+.modal-header { background: #3f4a36 !important; color: white !important; }
+.modal-close-btn { background: none; border: none; color: white; font-size: 1.3rem; }
+.modal-close-btn:hover { color: #ddd; }
 </style>
 </head>
-
 <body>
 
 <?php include "header.php"; ?>
-<?php include "nav.php"; ?>
 
 <div class="content-area">
+    <h2 class="fw mb-4">Pending Complaints <?= $admin_id ? " - ".htmlspecialchars($admin_barangay) : "" ?></h2>
 
-    <!-- ========================== -->
-    <!-- PENDING TABLE -->
-    <!-- ========================== -->
     <div class="table-card">
-        <h3 class="mb-3">Pending Complaints</h3>
-
         <div class="table-responsive">
-            <table class="table table-striped align-middle">
-                <thead>
+            <table class="table table-bordered align-middle">
+                <thead class="table-dark">
                     <tr>
                         <th>#</th>
                         <th>Full Name</th>
@@ -111,101 +115,55 @@ td {
                         <th>Message</th>
                         <th>Status</th>
                         <th>Submitted At</th>
-                        <th>Actions</th>
+                        <th class="text-center" style="width: 190px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="pendingTable">
-                    <?php if (count($pending) > 0): ?>
-                        <?php $i = 1; ?>
-                        <?php foreach ($pending as $row): ?>
-                            <tr id="row-<?= $row['id'] ?>">
-                                <td><?= $i++ ?></td>
-                                <td><?= htmlspecialchars($row['full_name']) ?></td>
-                                <td><?= htmlspecialchars($row['email']) ?></td>
-                                <td><?= htmlspecialchars($row['phone']) ?></td>
-                                <td>
-                                    <button class="btn btn-info btn-sm btn-view-message" 
-                                            data-message="<?= htmlspecialchars($row['message'], ENT_QUOTES) ?>">View Message</button>
-                                </td>
-                                <td class="status-pending">Pending</td>
-                                <td><?= $row['created_at'] ?></td>
-                                <td>
-                                    <button class="btn btn-success btn-sm btn-resolve" data-id="<?= $row['id'] ?>">Resolve</button>
-                                    <button class="btn btn-danger btn-sm btn-delete" data-id="<?= $row['id'] ?>">Delete</button>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php else: ?>
+                    <?php if (!empty($pending)): $i=1; foreach ($pending as $row): ?>
+                        <tr id="row-<?= $row['id'] ?>">
+                            <td><?= $i++ ?></td>
+                            <td><?= htmlspecialchars($row['full_name']) ?></td>
+                            <td><?= htmlspecialchars($row['email']) ?></td>
+                            <td><?= htmlspecialchars($row['phone']) ?></td>
+                            <td>
+                                <button class="icon-btn btn-view-message" 
+                                        data-message="<?= htmlspecialchars($row['message'], ENT_QUOTES) ?>">
+                                    <i class="bi bi-chat-dots"></i> View
+                                </button>
+                            </td>
+                            <td class="status-pending"><?= htmlspecialchars($row['status']) ?></td>
+                            <td><?= $row['created_at'] ?></td>
+                            <td class="text-center d-flex gap-2 justify-content-center">
+                                <?php if($row['status'] === 'Pending'): ?>
+                                <button class="icon-btn btn-resolve" data-id="<?= $row['id'] ?>">
+                                    <i class="bi bi-check-circle"></i> Resolve
+                                </button>
+                                <?php endif; ?>
+                                <button class="icon-btn btn-delete text-danger" data-id="<?= $row['id'] ?>">
+                                    <i class="bi bi-trash"></i> Delete
+                                </button>
+                            </td>
+                        </tr>
+                    <?php endforeach; else: ?>
                         <tr><td colspan="8" class="text-center text-muted">No pending complaints.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
         </div>
     </div>
-
-    <!-- ========================== -->
-    <!-- RESOLVED TABLE -->
-    <!-- ========================== -->
-    <div class="table-card">
-        <h3 class="mb-3">Resolved Complaints</h3>
-
-        <div class="table-responsive">
-            <table class="table table-striped align-middle">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Full Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Message</th>
-                        <th>Status</th>
-                        <th>Resolved At</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="resolvedTable">
-                    <?php if (count($resolved) > 0): ?>
-                        <?php $i = 1; ?>
-                        <?php foreach ($resolved as $row): ?>
-                            <tr id="resolved-<?= $row['id'] ?>">
-                                <td><?= $i++ ?></td>
-                                <td><?= htmlspecialchars($row['full_name']) ?></td>
-                                <td><?= htmlspecialchars($row['email']) ?></td>
-                                <td><?= htmlspecialchars($row['phone']) ?></td>
-                                <td>
-                                    <button class="btn btn-info btn-sm btn-view-message" 
-                                            data-message="<?= htmlspecialchars($row['message'], ENT_QUOTES) ?>">View Message</button>
-                                </td>
-                                <td class="status-resolved">Resolved</td>
-                                <td><?= $row['created_at'] ?></td>
-                                <td>
-                                    <button class="btn btn-danger btn-sm btn-delete" data-id="<?= $row['id'] ?>">Delete</button>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <tr><td colspan="8" class="text-center text-muted">No resolved complaints.</td></tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
 </div>
 
-<!-- ========================== -->
 <!-- VIEW MESSAGE MODAL -->
-<!-- ========================== -->
-<div class="modal fade" id="viewMessageModal" tabindex="-1" aria-labelledby="viewMessageLabel" aria-hidden="true">
+<div class="modal fade" id="viewMessageModal">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="viewMessageLabel">Full Message</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <h5 class="modal-title"><i class="bi bi-chat-dots"></i> Full Message</h5>
+        <button class="modal-close-btn" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i></button>
       </div>
       <div class="modal-body" id="modalMessageContent" style="white-space: pre-wrap;"></div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+        <button class="btn btn-dark btn-sm" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
@@ -213,12 +171,8 @@ td {
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// ==========================
-// HANDLE BUTTON ACTIONS
-// ==========================
 function handleAction(action, id) {
-    if (action === "delete" && !confirm("Delete this record?")) return;
-
+    if (action === "delete" && !confirm("Delete this complaint?")) return;
     fetch("complain_support.php", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -227,43 +181,11 @@ function handleAction(action, id) {
     .then(r => r.json())
     .then(res => {
         if (!res.success) return alert("Action failed.");
-
-        const row = document.getElementById("row-" + id);
-
-        // MOVE TO RESOLVED TABLE
-        if (action === "resolve") {
-            const resolvedTable = document.getElementById("resolvedTable");
-            let newRow = row.cloneNode(true);
-
-            // Update status
-            newRow.querySelector("td:nth-child(6)").textContent = "Resolved";
-            newRow.querySelector("td:nth-child(6)").classList.remove("status-pending");
-            newRow.querySelector("td:nth-child(6)").classList.add("status-resolved");
-
-            // Remove resolve button
-            let resolveBtn = newRow.querySelector(".btn-resolve");
-            if (resolveBtn) resolveBtn.remove();
-
-            newRow.id = "resolved-" + id;
-            resolvedTable.prepend(newRow);
-            row.remove();
-
-            // Reattach event for view message button
-            attachViewMessageEvent(newRow.querySelector(".btn-view-message"));
-            return;
-        }
-
-        // DELETE ITEM
-        if (action === "delete") {
-            const pendingRow = document.getElementById("row-" + id);
-            const resolvedRow = document.getElementById("resolved-" + id);
-            if (pendingRow) pendingRow.remove();
-            if (resolvedRow) resolvedRow.remove();
-        }
+        document.getElementById("row-" + id)?.remove();
     });
 }
 
-// Attach resolve/delete events
+// Buttons
 document.querySelectorAll(".btn-resolve").forEach(btn =>
     btn.addEventListener("click", () => handleAction("resolve", btn.dataset.id))
 );
@@ -272,22 +194,13 @@ document.querySelectorAll(".btn-delete").forEach(btn =>
     btn.addEventListener("click", () => handleAction("delete", btn.dataset.id))
 );
 
-// ==========================
-// VIEW MESSAGE MODAL
-// ==========================
-function attachViewMessageEvent(btn) {
+// View message
+document.querySelectorAll(".btn-view-message").forEach(btn => {
     btn.addEventListener("click", () => {
-        const message = btn.dataset.message;
-        document.getElementById("modalMessageContent").textContent = message;
-
-        const modal = new bootstrap.Modal(document.getElementById('viewMessageModal'));
-        modal.show();
+        document.getElementById("modalMessageContent").textContent = btn.dataset.message;
+        new bootstrap.Modal(document.getElementById('viewMessageModal')).show();
     });
-}
-
-// Initial attach
-document.querySelectorAll(".btn-view-message").forEach(btn => attachViewMessageEvent(btn));
+});
 </script>
-
 </body>
 </html>
