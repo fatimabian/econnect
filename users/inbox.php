@@ -2,8 +2,6 @@
 session_start();
 include 'db_connect.php';
 include 'header.php';
-include 'nav.php';
-
 // Check if user is logged in
 $user_id = $_SESSION['user_id'] ?? null;
 if (!$user_id) {

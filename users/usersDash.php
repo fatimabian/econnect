@@ -2,7 +2,6 @@
 session_start();
 include '../db_connect.php';
 include 'header.php';
-include 'nav.php';
 
 // ==========================
 // Check if user is logged in
@@ -154,10 +153,11 @@ document.addEventListener('DOMContentLoaded', function () {
 <style>
 body {
     margin: 0;
+    padding-top: 120px; /* enough space for header height */
     font-family: Georgia, serif;
     background-color: #f8f8f8;
-    padding-top: 60px;
 }
+
 
 .page-container {
     display: flex;

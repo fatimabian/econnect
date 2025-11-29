@@ -46,7 +46,6 @@ $stmt->close();
 <body>
 
 <?php include 'header.php'; ?>
-<?php include 'nav.php'; ?> 
 
 <div class="map-container">
   <h2 class="map-title">Live Truck Tracking</h2>
@@ -84,7 +83,9 @@ $stmt->close();
 </div>
 
 <style>
+    
 .map-container {
+    margin-top: 90px;
     text-align: center;
 }
 .map-title {

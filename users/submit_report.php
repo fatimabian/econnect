@@ -2,7 +2,6 @@
 session_start();
 include 'db_connect.php';
 include 'header.php';
-include 'nav.php';
 
 // Assume logged-in user
 $user_id = $_SESSION['user_id'] ?? null;
@@ -105,12 +104,15 @@ if (isset($_POST['submit_report'])) {
 </div>
 
 <style>
+
+:root {
+    --header-height: 130px; /* your header height */
+}
 /* Sidebar-aware layout and spacing */
 .report-wrapper {
     margin-left: 250px; /* Adjust based on your sidebar width */
     padding: 20px 20px 100px 20px; /* Extra padding-bottom for footer space */
     background-color: #f5f5f5;
-    min-height: 100vh;
 }
 
 .form-group {
