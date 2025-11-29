@@ -81,6 +81,7 @@ $stmt->close();
     </div>
   </div>
 </div>
+<?php include 'footer.php'; ?>
 
 <style>
     

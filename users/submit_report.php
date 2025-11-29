@@ -104,14 +104,11 @@ if (isset($_POST['submit_report'])) {
 </div>
 
 <style>
-
-:root {
-    --header-height: 130px; /* your header height */
-}
 /* Sidebar-aware layout and spacing */
 .report-wrapper {
-    margin-left: 250px; /* Adjust based on your sidebar width */
-    padding: 20px 20px 100px 20px; /* Extra padding-bottom for footer space */
+    margin-left: 250px; /* sidebar */
+    min-height: calc(100vh - 90px); /* 100vh minus top padding for header */
+    padding: 90px 20px 40px 20px;
     background-color: #f5f5f5;
 }
 
@@ -145,4 +142,4 @@ textarea.form-control {
 }
 </style>
 
-<!-- <?php include 'footer.php'; ?> -->
+<?php include 'footer.php'; ?>

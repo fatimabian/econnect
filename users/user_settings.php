@@ -139,8 +139,8 @@ if (isset($_POST['update_settings'])) {
 
 <style>
 .settings-wrapper {
-    margin-left: 250px;
-    padding: 20px 20px 100px 20px; /* bottom padding for footer */
+    margin-left: 250px; /* if you have a sidebar */
+    padding: 90px 20px 100px 20px; /* top padding >= header height (70px) */
     background-color: #f5f5f5;
     min-height: 100vh;
 }
@@ -169,4 +169,4 @@ textarea.form-control {
 }
 </style>
 
-<!-- <?php include 'footer.php'; ?> -->
+<?php include 'footer.php'; ?>

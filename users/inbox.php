@@ -61,7 +61,7 @@ $admin_messages = $msgStmt->get_result()->fetch_all(MYSQLI_ASSOC);
 .inbox-wrapper {
     margin-left: 250px;
     padding: 20px;
-    min-height: 100vh;
+    min-height: 93.5vh;
     background-color: #f5f5f5;
     display: flex;
     flex-direction: column;
@@ -179,6 +179,6 @@ $admin_messages = $msgStmt->get_result()->fetch_all(MYSQLI_ASSOC);
     </div>
 </div>
 
-<!-- <?php include 'footer.php'; ?> -->
+<?php include 'footer.php'; ?>
 </body>
 </html>

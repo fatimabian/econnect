@@ -55,6 +55,7 @@ body {
     left: 0;
     z-index: 2000;
     height: 70px;
+    box-sizing: border-box; /* Prevents overflow */
 }
 
 .header .logo {
@@ -228,7 +229,7 @@ body {
     </div>
 
     <div class="nav-item <?= ($currentPage == 'submit_report.php') ? 'active' : '' ?>" onclick="location.href='submit_report.php'">
-        <i class="fa fa-gear"></i>
+        <i class="fa-solid fa-circle-exclamation"></i>
         <span class="nav-text">Submit Report</span>
     </div>
 
