@@ -25,16 +25,14 @@ $stmt->close();
 // ---------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    // ---------------------------
     // SEND MESSAGE
-    // ---------------------------
     if (isset($_POST['send_message'])) {
         $recipient_type = $_POST['recipient_type'];
         $subject = trim($_POST['subject']);
         $message = trim($_POST['message']);
-        $phones = []; // Collect numbers for SMS
+        $phones = [];
 
-        // ---- Save to Crew Inbox ----
+        // Save to Crew Inbox
         if ($recipient_type === 'crew' || $recipient_type === 'both') {
             $crew_list = $conn->prepare("SELECT id, phone FROM collection_crew WHERE barangay = ?");
             $crew_list->bind_param("s", $admin_barangay);
@@ -46,7 +44,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute();
                 $stmt->close();
 
-                // Format phone for SMS
                 if (!empty($row['phone'])) {
                     $phone = preg_replace('/\s+/', '', $row['phone']);
                     if (preg_match('/^09\d{9}$/', $phone)) $phone = '+63' . substr($phone, 1);
@@ -57,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $crew_list->close();
         }
 
-        // ---- Save to User Inbox ----
+        // Save to User Inbox
         if ($recipient_type === 'user' || $recipient_type === 'both') {
             $user_list = $conn->prepare("SELECT id, contact FROM users WHERE barangay = ?");
             $user_list->bind_param("s", $admin_barangay);
@@ -69,7 +66,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute();
                 $stmt->close();
 
-                // Format phone for SMS
                 if (!empty($row['contact'])) {
                     $phone = preg_replace('/\s+/', '', $row['contact']);
                     if (preg_match('/^09\d{9}$/', $phone)) $phone = '+63' . substr($phone, 1);
@@ -80,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user_list->close();
         }
 
-        // ---- Send SMS via iProg ----
+        // Send SMS via iProg
         if (!empty($phones)) {
             $api_token = "dda33f23a9d96e5f433c56d8907c072b40830ef7";
             $sms_message = "$subject: $message";
@@ -117,40 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // ---------------------------
-    // EDIT MESSAGE
-    // ---------------------------
-    if (isset($_POST['edit_message_confirm'])) {
-        $msg_id = $_POST['msg_id'];
-        $subject = trim($_POST['subject']);
-        $message = trim($_POST['message']);
-
-        $stmt = $conn->prepare("UPDATE crew_inbox ci 
-                                INNER JOIN collection_crew c ON ci.crew_id = c.id
-                                SET ci.subject=?, ci.message=?
-                                WHERE ci.id=? AND ci.admin_id=? AND c.barangay=?");
-        $stmt->bind_param("ssiis", $subject, $message, $msg_id, $admin_id, $admin_barangay);
-        $stmt->execute();
-
-        if ($stmt->affected_rows === 0) {
-            $stmt2 = $conn->prepare("UPDATE user_inbox ui 
-                                     INNER JOIN users u ON ui.user_id = u.id
-                                     SET ui.subject=?, ui.message=?
-                                     WHERE ui.id=? AND ui.admin_id=? AND u.barangay=?");
-            $stmt2->bind_param("ssiis", $subject, $message, $msg_id, $admin_id, $admin_barangay);
-            $stmt2->execute();
-            $stmt2->close();
-        }
-        $stmt->close();
-
-        $_SESSION['success'] = "Message updated successfully!";
-        header("Location: send_message.php");
-        exit;
-    }
-
-    // ---------------------------
     // DELETE MESSAGE
-    // ---------------------------
     if (isset($_POST['delete_message'])) {
         $msg_id = $_POST['msg_id'];
 
@@ -204,53 +167,46 @@ $stmt->close();
 $conn->close();
 ?>
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Send Message</title>
-
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-
 <style>
-body {
-    background: rgba(68,64,51,0.4) !important;
-    font-family: Arial, sans-serif;
-    padding-top: 70px;
-    padding-left: 70px;
-}
-.card {
-    border-radius: 14px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
-h2 { color: #3f4a36; }
+body { background: rgba(68,64,51,0.4) !important; 
+    font-family: Arial, sans-serif; 
+    padding-top:70px; 
+    padding-left:70px; }
 
-/* Default button (Edit/Delete/View) → NO OUTLINE */
-.icon-btn {
-    background: none !important;
-    border: none !important;
-    color: black !important;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 1rem;
-    outline: none !important;
+.card { 
+    border-radius:14px; 
+    box-shadow:0 4px 12px rgba(0,0,0,0.08); 
 }
 
-/* Send Message Button ONLY → WITH OUTLINE */
-.send-btn {
-    background: none !important;
-    border: none !important;
-    color: black !important;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 1rem;
-    outline: 2px solid black !important;
-}
+h2 { color:#3f4a36; }
 
-.modal-header { background-color: #3f4a36; color: white; }
+.icon-btn { 
+    background:none; border:none; 
+    color:black; padding:6px 10px; 
+    border-radius:6px; font-size:1rem; 
+    outline:none; }
+
+.send-btn { 
+    background:none; 
+    border:none; 
+    color:black; 
+    padding:6px 10px; 
+    border-radius:6px; 
+    font-size:1rem; 
+    outline:2px solid black; }
+
+.modal-header { 
+    background-color:#3f4a36; 
+    color:white; }
+    
 </style>
 </head>
 <body>
@@ -258,9 +214,8 @@ h2 { color: #3f4a36; }
 <?php include 'header.php'; ?>
 
 <div class="container my-4">
-
     <div class="d-flex justify-content-between align-items-center mb-3">
-         <h2 class="fw mb-4">Sent Messages - <?= htmlspecialchars($admin_barangay) ?></h2>
+        <h2 class="fw mb-4">Announcements - <?= htmlspecialchars($admin_barangay) ?></h2>
 
         <!-- Send Message Button -->
         <button class="send-btn" data-bs-toggle="modal" data-bs-target="#sendModal">
@@ -273,9 +228,7 @@ h2 { color: #3f4a36; }
     <?php endif; ?>
 
     <div class="card p-3">
-
         <input type="text" id="searchBar" class="form-control mb-3" placeholder="Search messages...">
-
         <div class="table-responsive">
             <table class="table table-hover table-bordered">
                 <thead class="table-dark">
@@ -283,9 +236,8 @@ h2 { color: #3f4a36; }
                         <th>#</th>
                         <th>Recipient Type</th>
                         <th>Subject</th>
-                        <!-- <th>Message</th> -->
                         <th>Sent At</th>
-                        <th width="180">Actions</th>
+                        <th width="120">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="messageTable">
@@ -294,7 +246,6 @@ h2 { color: #3f4a36; }
                         <td><?= $i++; ?></td>
                         <td><?= $msg['recipient_type'] ?></td>
                         <td><?= htmlspecialchars($msg['subject']) ?></td>
-                        <!-- <td><?= htmlspecialchars($msg['message']) ?></td> -->
                         <td><?= $msg['created_at'] ?></td>
                         <td class="d-flex gap-1">
                             <!-- View Button -->
@@ -306,16 +257,6 @@ h2 { color: #3f4a36; }
                                 <i class="bi bi-eye"></i> View
                             </button>
 
-                            <!-- Edit Button -->
-                            <button class="icon-btn"
-                                data-bs-toggle="modal" data-bs-target="#editModal"
-                                data-id="<?= $msg['msg_id'] ?>"
-                                data-recipient="<?= $msg['recipient_type'] ?>"
-                                data-subject="<?= htmlspecialchars($msg['subject']) ?>"
-                                data-message="<?= htmlspecialchars($msg['message']) ?>">
-                                <i class="bi bi-pencil-square"></i> Edit
-                            </button>
-
                             <!-- Delete Button -->
                             <button class="icon-btn text-danger"
                                 data-bs-toggle="modal" data-bs-target="#deleteModal"
@@ -323,11 +264,10 @@ h2 { color: #3f4a36; }
                                 data-recipient="<?= $msg['recipient_type'] ?>">
                                 <i class="bi bi-trash"></i> Delete
                             </button>
-
                         </td>
                     </tr>
                 <?php endforeach; else: ?>
-                    <tr><td colspan="6" class="text-center text-muted">No messages yet.</td></tr>
+                    <tr><td colspan="5" class="text-center text-muted">No messages yet.</td></tr>
                 <?php endif; ?>
                 </tbody>
             </table>
@@ -391,57 +331,6 @@ h2 { color: #3f4a36; }
   </div>
 </div>
 
-<!-- EDIT MODAL -->
-<div class="modal fade" id="editModal">
-  <div class="modal-dialog modal-dialog-centered">
-    <form class="modal-content card p-3" id="editForm">
-        <div class="modal-header">
-            <h5 class="modal-title">Edit Message</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-            <input type="hidden" id="edit_id">
-            <div class="mb-3">
-                <label class="form-label">Recipient</label>
-                <input type="text" id="edit_recipient" class="form-control" readonly>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Subject</label>
-                <input type="text" id="edit_subject" class="form-control" required>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Message</label>
-                <textarea id="edit_message" rows="4" class="form-control" required></textarea>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button type="button" id="updateConfirmBtn" class="icon-btn">
-                <i class="bi bi-check-lg"></i> Update
-            </button>
-        </div>
-    </form>
-  </div>
-</div>
-
-<!-- CONFIRM EDIT MODAL -->
-<div class="modal fade" id="confirmEditModal">
-  <div class="modal-dialog modal-dialog-centered">
-    <form method="POST" class="modal-content card p-3" id="confirmEditForm">
-        <div class="modal-header">
-            <h5 class="modal-title">Confirm Update</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">Are you sure you want to update this message?</div>
-        <div class="modal-footer">
-            <button type="button" class="icon-btn" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" name="edit_message_confirm" class="send-btn">
-                <i class="bi bi-check-lg"></i> Confirm
-            </button>
-        </div>
-    </form>
-  </div>
-</div>
-
 <!-- DELETE MODAL -->
 <div class="modal fade" id="deleteModal">
   <div class="modal-dialog modal-dialog-centered">
@@ -465,7 +354,6 @@ h2 { color: #3f4a36; }
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
 <script>
 // Search filter
 document.getElementById("searchBar").addEventListener("keyup", function() {
@@ -473,30 +361,6 @@ document.getElementById("searchBar").addEventListener("keyup", function() {
     document.querySelectorAll("#messageTable tr").forEach(row => {
         row.style.display = row.innerText.toLowerCase().includes(q) ? "" : "none";
     });
-});
-
-// Fill Edit Modal
-document.getElementById('editModal').addEventListener('show.bs.modal', function(event) {
-    const btn = event.relatedTarget;
-    this.querySelector('#edit_id').value = btn.dataset.id;
-    this.querySelector('#edit_recipient').value = btn.dataset.recipient;
-    this.querySelector('#edit_subject').value = btn.dataset.subject;
-    this.querySelector('#edit_message').value = btn.dataset.message;
-});
-
-// Confirm Update
-document.getElementById('updateConfirmBtn').addEventListener('click', function(){
-    const modal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
-    modal.hide();
-
-    const form = document.getElementById('confirmEditForm');
-    form.innerHTML += `
-        <input type="hidden" name="msg_id" value="${document.getElementById('edit_id').value}">
-        <input type="hidden" name="subject" value="${document.getElementById('edit_subject').value}">
-        <input type="hidden" name="message" value="${document.getElementById('edit_message').value}">
-    `;
-
-    new bootstrap.Modal(document.getElementById('confirmEditModal')).show();
 });
 
 // Fill Delete Modal

@@ -1,144 +1,441 @@
-    body {
-        background: url('img/tree.jpg') no-repeat center center/cover;
-        background-attachment: fixed;
-        font-family: "Poppins", sans-serif;
-    }
+/* General Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-    /* 1. HEADER & NAVIGATION */
-    .custom-header {
-        background-color: #3f4a36; 
-        position: fixed; 
-        top: 0;
-        width: 100%;
-        z-index: 1020; 
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
-        height: 60px; 
-    }
+body {
+    font-family: 'Poppins', sans-serif;
+    background: url('img/tree.jpg') no-repeat center center fixed;
+    background-size: cover;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
 
-    .header-logo {
-        height: 30px; /* Adjust size */
-        margin-right: 20px;
-        border-radius: 45px;
-    }
+/* Header Styles */
+.custom-header {
+    background-color: #3f4a36;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1020;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    height: 60px;
+}
 
-    /* Back button on header */
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 60px;
+    padding: 0 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.header-logo {
+    height: 30px;
+    margin-right: 15px;
+    border-radius: 45px;
+}
+
+.logo-text {
+    color: white;
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
 .btn-back {
-        color: white;
-        background: transparent;
-        border: 1px solid white;
-        border-radius: 8px;
-        padding: 5px 12px;
-        text-decoration: none;
-        font-weight: 500;
-    }
-    .btn-back:hover {
-        background: white;
-        color: #3f4a36;
-        transition: 0.3s ease;
-    }
+    color: white;
+    background: transparent;
+    border: 1px solid white;
+    border-radius: 8px;
+    padding: 5px 15px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
 
+.btn-back:hover {
+    background: white;
+    color: #3f4a36;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    padding: 100px 20px 40px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+/* Register Container */
+.register-container {
+    width: 100%;
+    max-width: 900px;
+    background: rgba(245, 248, 241, 0.98);
+    padding: 40px 50px;
+    border-radius: 25px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(5px);
+    margin: 0 auto;
+}
+
+/* Form Headers */
+.register-container h2 {
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 10px;
+    color: #3b4c31;
+    font-size: 2rem;
+}
+
+.subtext {
+    text-align: center;
+    color: #4f5d46;
+    margin-bottom: 25px;
+    font-size: 1rem;
+}
+
+/* Section Headers */
+.register-container h5 {
+    color: #3b4c31;
+    font-weight: 600;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.register-container hr {
+    border-color: #9ea89c;
+    opacity: 0.5;
+    margin: 25px 0;
+}
+
+/* Form Styles */
+.form-label {
+    color: #3b4c31;
+    font-weight: 500;
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+}
+
+.form-control {
+    border-radius: 12px;
+    padding: 12px;
+    border: 1px solid #9ea89c;
+    font-size: 0.95rem;
+}
+
+.form-control:focus {
+    border-color: #3f4a36;
+    box-shadow: 0 0 0 0.25rem rgba(63, 74, 54, 0.25);
+}
+
+.form-select {
+    border-radius: 12px;
+    padding: 12px;
+    border: 1px solid #9ea89c;
+    font-size: 0.95rem;
+}
+
+/* Error Messages */
+.error-message {
+    color: #dc3545;
+    font-size: 0.85rem;
+    margin-top: 5px;
+    font-weight: 500;
+}
+
+/* Google Button */
+.google-btn {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: 0.3s ease;
+    width: 100%;
+    font-size: 0.95rem;
+}
+
+.google-btn:hover {
+    background: #f1f1f1;
+}
+
+/* Divider */
+.divider-or {
+    text-align: center;
+    margin: 25px 0;
+    font-weight: 600;
+    color: #3b4c31;
+    position: relative;
+    font-size: 1rem;
+}
+
+.divider-or:before,
+.divider-or:after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 40%;
+    height: 1px;
+    background: #9ea89c;
+}
+
+.divider-or:before {
+    left: 0;
+}
+
+.divider-or:after {
+    right: 0;
+}
+
+/* Terms Checkbox */
+.form-check-input:checked {
+    background-color: #3f4a36;
+    border-color: #3f4a36;
+}
+
+.form-check-label {
+    color: #4f5d46;
+    font-size: 0.9rem;
+}
+
+/* Create Button */
+.create-btn {
+    background: #4c633e;
+    color: white;
+    border: none;
+    padding: 14px;
+    width: 100%;
+    border-radius: 15px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: 0.3s ease;
+    margin-top: 20px;
+}
+
+.create-btn:hover {
+    background: #384c2f;
+}
+
+/* Login Link */
+.login-link {
+    text-align: center;
+    margin-top: 20px;
+    color: #3b4c31;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.login-link a {
+    color: #2b4023;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}
+
+/* OTP Modal */
+.otp-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050;
+    padding: 20px;
+}
+
+.otp-modal.hidden {
+    display: none;
+}
+
+.otp-content {
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid #d1e7c9;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.otp-title {
+    color: #2d5a27;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.otp-description {
+    color: #666;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+}
+
+.otp-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1e7c9;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 1.2rem;
+    letter-spacing: 3px;
+    margin-bottom: 15px;
+}
+
+.otp-input:focus {
+    outline: none;
+    border-color: #4c633e;
+    box-shadow: 0 0 0 3px rgba(76, 99, 62, 0.2);
+}
+
+.verify-btn {
+    background: #4c633e;
+    color: white;
+    border: none;
+    padding: 12px;
+    width: 100%;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: 0.3s ease;
+}
+
+.verify-btn:hover {
+    background: #384c2f;
+}
+
+/* Responsive Styles */
+@media (max-width: 992px) {
     .register-container {
-        max-width: 850px;
-        margin: 50px auto;
-        background: rgba(245, 248, 241, 0.98);
-        padding: 40px 50px;
-        border-radius: 25px;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.25);
-        backdrop-filter: blur(5px);
-          margin-top: 80px; 
+        padding: 35px 40px;
+        max-width: 95%;
     }
-
-    h2 {
-        font-weight: 700;
-        text-align: center;
-        margin-bottom: 10px;
-        color: #3b4c31;
+    
+    .register-container h2 {
+        font-size: 1.8rem;
     }
+}
 
+@media (max-width: 768px) {
+    .header-content {
+        padding: 0 15px;
+    }
+    
+    .main-content {
+        padding: 90px 15px 30px;
+    }
+    
+    .register-container {
+        padding: 30px 25px;
+    }
+    
+    .register-container h2 {
+        font-size: 1.6rem;
+    }
+    
+    .logo-text {
+        font-size: 1.1rem;
+    }
+    
+    .header-logo {
+        height: 25px;
+        margin-right: 10px;
+    }
+    
+    .btn-back {
+        padding: 4px 12px;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .register-container {
+        padding: 25px 20px;
+        border-radius: 20px;
+    }
+    
+    .register-container h2 {
+        font-size: 1.4rem;
+    }
+    
     .subtext {
-        text-align: center;
-        color: #4f5d46;
-        margin-bottom: 25px;
+        font-size: 0.9rem;
     }
-
-    .google-btn {
-        background: white;
-        border: 1px solid #ddd;
-        border-radius: 12px;
+    
+    .form-control, .form-select {
         padding: 10px;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
-        cursor: pointer;
-        transition: 0.3s ease;
+        font-size: 0.9rem;
     }
-
-    .google-btn:hover {
-        background: #f1f1f1;
+    
+    .create-btn {
+        padding: 12px;
+        font-size: 1rem;
     }
-
-    .divider-or {
-        text-align: center;
-        margin: 20px 0;
-        font-weight: 600;
-        color: #3b4c31;
-        position: relative;
+    
+    .logo-text {
+        font-size: 1rem;
     }
-
+    
+    .btn-back {
+        padding: 3px 10px;
+        font-size: 0.8rem;
+    }
+    
     .divider-or:before,
     .divider-or:after {
-        content: "";
-        position: absolute;
-        top: 50%;
-        width: 40%;
-        height: 1px;
-        background: #9ea89c;
+        width: 35%;
     }
+}
 
-    .divider-or:before { left: 0; }
-    .divider-or:after { right: 0; }
-
-    .create-btn {
-        background: #4c633e;
-        color: white;
-        border: none;
-        padding: 12px;
-        width: 100%;
-        border-radius: 15px;
-        font-size: 17px;
-        font-weight: 600;
-        transition: 0.3s ease;
+@media (max-width: 400px) {
+    .header-content {
+        padding: 0 10px;
     }
-
-    .create-btn:hover {
-        background: #384c2f;
+    
+    .logo-text {
+        display: none;
     }
-
-    .login-link {
-        text-align: center;
-        margin-top: 10px;
-        color: #3b4c31;
-        font-weight: 500;
+    
+    .register-container {
+        padding: 20px 15px;
     }
-
-    .login-link a {
-        color: #2b4023;
-        text-decoration: none;
-        font-weight: 600;
+    
+    .register-container h2 {
+        font-size: 1.3rem;
     }
-
-    .login-link a:hover {
-        text-decoration: underline;
+    
+    .divider-or:before,
+    .divider-or:after {
+        width: 30%;
     }
-
-    .form-control {
-        border-radius: 12px;
-        padding: 12px;
+    
+    .form-control, .form-select {
+        padding: 8px 12px;
     }
-
-    .form-label {
-        color: #3b4c31;
-        font-weight: 500;
-    }
+}

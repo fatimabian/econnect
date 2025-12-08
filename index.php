@@ -1,28 +1,3 @@
-<?php
-session_start();
-include 'db_connect.php';
-
-// Handle Contact Us form submission
-if (isset($_POST['submit_complaint'])) {
-    $full_name = mysqli_real_escape_string($conn, $_POST['full_name']);
-    $email = mysqli_real_escape_string($conn, $_POST['email']);
-    $phone = mysqli_real_escape_string($conn, $_POST['phone']);
-    $message = mysqli_real_escape_string($conn, $_POST['message']);
-
-    $sql = "INSERT INTO complaints (full_name, email, phone, message) VALUES (?, ?, ?, ?)";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ssss", $full_name, $email, $phone, $message);
-
-    if ($stmt->execute()) {
-        $success_message = "Message sent successfully!";
-    } else {
-        $error_message = "Failed to send message. Please try again.";
-    }
-
-    $stmt->close();
-}
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,6 +6,7 @@ if (isset($_POST['submit_complaint'])) {
     <title>ECOnnect - Connecting You to a Greener Future</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="econnect.css">
 </head>
 <body>
@@ -108,10 +84,10 @@ if (isset($_POST['submit_complaint'])) {
                     <p class="step-text">Get updates when pickup is delayed, cancelled, or on the way.</p>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 mb-4">
                 <div class="step-card">
                     <h4>Report Issues</h4>
-                    <p class="step-text">Track the truck and send reports directly to the LGU.</p>
+                    <p class="step-text">Send reports directly to the LGU.</p>
                 </div>
             </div>
         </div>
@@ -136,41 +112,60 @@ if (isset($_POST['submit_complaint'])) {
 <!-- CONTACT US -->
 <section class="contact-us-section py-5" id="contact-us">
     <div class="container">
-        <div class="contact-form-container p-5">
-            <h3 class="text-center mb-4 contact-heading">Contact Us</h3>
-            <p class="text-center text-dark">We'd love to hear from you!</p>
+        <div class="contact-box bg-light p-5 rounded shadow-lg">
 
-            <?php
-            if (!empty($success_message)) {
-                echo '<div class="alert alert-success text-center">'.$success_message.'</div>';
-            } elseif (!empty($error_message)) {
-                echo '<div class="alert alert-danger text-center">'.$error_message.'</div>';
-            }
-            ?>
+            <h3 class="text-center mb-4 fw-bold" style="color:#3f4a36;">Contact Us</h3>
+            <p class="text-center mb-5">We’d love to connect with you!</p>
 
-            <form action="" method="POST" class="row justify-content-center mt-4">
-                <div class="col-md-5">
-                    <input type="text" name="full_name" class="form-control contact-input mb-3" placeholder="Full Name" required>
-                    <input type="email" name="email" class="form-control contact-input mb-3" placeholder="Email Address" required>
-                    <input type="tel" name="phone" class="form-control contact-input mb-4" placeholder="Phone Number" required>
+            <div class="row align-items-center">
 
-                    <p class="contact-text-small">
-                        Or reach out to us directly:<br>
-                        <a href="tel:09935048514" class="contact-phone-link">0993-504-8514</a>
+                <!-- LEFT SIDE: CONTACT DETAILS -->
+                <div class="col-md-6 mb-4 mb-md-0">
+                    <h5 class="fw-bold" style="color:#3f4a36;">📍 Address</h5>
+                    <p class="mb-3">Bagong Pook, Rosario, Batangas</p>
+
+                    <h5 class="fw-bold" style="color:#3f4a36;">📧 Email</h5>
+                    <p class="mb-3">
+                        <a href="mailto:econnect@gmail.com" class="text-dark text-decoration-none fw-semibold">
+                            econnect@gmail.com
+                        </a>
+                    </p>
+
+                    <h5 class="fw-bold" style="color:#3f4a36;">📞 Phone</h5>
+                    <p>
+                        <a href="tel:09935048513" class="text-dark text-decoration-none fw-semibold">
+                            0993 504 8513
+                        </a>
                     </p>
                 </div>
 
-                <div class="col-md-5">
-                    <textarea name="message" class="form-control contact-message-box mb-3" rows="6"
-                        placeholder="Write your message here..." required></textarea>
-                    <div class="d-flex justify-content-end">
-                        <button type="submit" name="submit_complaint" class="btn btn-send-message">Send Message</button>
+                <!-- RIGHT SIDE: SOCIAL ICONS -->
+                <div class="col-md-6 text-center">
+                    <h5 class="fw-bold mb-3" style="color:#3f4a36;">Follow Us</h5>
+
+                    <div class="d-flex justify-content-center gap-4">
+
+                        <a href="https://facebook.com" target="_blank" class="social-icon-link">
+                            <i class="fab fa-facebook-f social-icon-fa"></i>
+                        </a>
+
+                        <a href="https://instagram.com" target="_blank" class="social-icon-link">
+                            <i class="fab fa-instagram social-icon-fa"></i>
+                        </a>
+
+                        <a href="https://twitter.com" target="_blank" class="social-icon-link">
+                            <i class="fab fa-twitter social-icon-fa"></i>
+                        </a>
+
                     </div>
+
+                    <p class="mt-3 text-secondary">Stay connected with our updates</p>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 </section>
+
 
 <?php include 'footer.php'; ?>
 
